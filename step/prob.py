@@ -1,5 +1,5 @@
-from step.terms import Terms, TermsLattice
-from step.step import MatGroup
+from step.step import StepFunction
 
-class SignedMeasure(MatGroup, TermsLattice, Terms)
-    ...
+class SignedMeasure(StepFunction)
+    def __matmul__(self, x):
+        return (self * other).leb()
