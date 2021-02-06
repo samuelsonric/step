@@ -18,7 +18,7 @@ class CompositeFunction(Terms):
         right = []
         for i in terms:
             right.append((left.setdefault(i[0], len(left)), i[1]))
-        return cls(fromiter(left, float64), StepFunction.from_array(right))
+        return cls(fromiter(left, float64), StepFunction.from_terms(right))
 
     @classmethod
     def from_step(cls, step):

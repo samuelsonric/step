@@ -5,19 +5,20 @@ from bisect import bisect
 
 
 class StepFunction(TermsAlgebra):
-    def __init__(self, mat):
-        self.mat = mat
+    def __init__(self, y, x):
+        self.y = y
+        self.x = x
 
     def __call__(self, x):
-        return self.mat[bisect(self.mat[:, 1], x) - 1, 0]
+        return self.y[bisect(self.x, x) - 1]
 
     @classmethod
-    def from_array(cls, arr):
-        return cls(array(arr))
+    def from_sequences(cls, y, x):
+        return cls(array(y), array(x))
 
     @classmethod
     def from_terms(cls, terms):
-        return cls.from_array(tuple(terms))
+        return cls.from_sequences(*zip(*terms))
 
     @classmethod
     def from_intervals(cls, intervals):
@@ -28,7 +29,7 @@ class StepFunction(TermsAlgebra):
         return cls.from_terms(cfun.iter_terms())
 
     def iter_terms(self):
-        yield from map(tuple, self.mat)
+        yield from zip(self.y, self.x)
 
     def __neg__(self):
-        return type(self)(self.mat * (-1, 0))
+        return type(self)(-self.y, self.x)
