@@ -3,7 +3,7 @@ from numpy import array
 from itertools import islice
 from bisect import bisect
 
-class Mat:
+class MatGroup(TermsGroup):
     def __init__(self, mat):
         self.mat = mat
 
@@ -33,7 +33,6 @@ class Mat:
         return type(self)(self.mat * (-1, 0))
 
 
-
-class StepFunction(Mat, TermsLattice, TermsGroup, TermsMonoid, Terms):
+class StepFunction(MatGroup, TermsLattice, TermsMonoid, Terms):
     ...
 

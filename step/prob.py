@@ -1,5 +1,5 @@
-from step.terms import Terms, TermsLattice, TermsGroup
-from step.step import Mat
+from step.terms import Terms, TermsLattice
+from step.step import MatGroup
 
-class SignedMeasure(Mat, TermsLattice, TermsGroup, Terms)
+class SignedMeasure(MatGroup, TermsLattice, Terms)
     ...
