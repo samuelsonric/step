@@ -17,10 +17,10 @@ def call(val, x):
 
 def triples_of_terms(x):
     filt = lambda x: x[0]
-    yield from filter(filt, triples_of_terms0(x))
+    yield from filter(filt, triples_of_terms_0(x))
 
 
-def triples_of_terms0(x):
+def triples_of_terms_0(x):
     i = next(x)
     for j in x:
         yield (*i, j[1])
