@@ -1,10 +1,9 @@
-from step.terms import TermsLattice, TermsGroup
+from step.terms import Terms, TermsLattice, TermsGroup, TermsMonoid
 from numpy import array
 from itertools import islice
 from bisect import bisect
 
-
-class StepFunction(TermsLattice, TermsGroup):
+class Mat:
     def __init__(self, mat):
         self.mat = mat
 
@@ -32,3 +31,9 @@ class StepFunction(TermsLattice, TermsGroup):
 
     def __neg__(self):
         return type(self)(self.mat * (-1, 0))
+
+
+
+class StepFunction(Mat, TermsLattice, TermsGroup, TermsMonoid, Terms):
+    ...
+

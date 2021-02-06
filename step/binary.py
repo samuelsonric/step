@@ -1,4 +1,4 @@
-from step.terms import TermsLattice
+from step.terms import Terms, TermsLattice, TermsMonoid
 from itertools import cycle, chain, islice, zip_longest
 from bisect import bisect
 from math import inf
@@ -6,7 +6,7 @@ from numpy import array
 from collections import deque
 
 
-class UnionOfIntervals(TermsLattice):
+class UnionOfIntervals(TermsLattice, TermsMonoid, Terms):
     repr_pat = "[{1}, {2})"
     repr_sep = " U "
 
