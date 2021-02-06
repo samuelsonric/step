@@ -8,7 +8,7 @@ from collections import deque
 
 class UnionOfIntervals(TermsLattice):
     repr_pat = "[{1}, {2})"
-    repr_sep = ", "
+    repr_sep = " U "
 
     def __init__(self, parity, endpoints):
         self.parity = parity
