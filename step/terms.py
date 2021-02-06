@@ -131,6 +131,9 @@ class Terms:
     def leb(self):
         return leb(self.iter_terms())
 
+    def __matmul__(self, other):
+        return leb(pointwise_binary(mul, self.iter_terms(), other.iter_terms()))
+
     def __call__(self, x):
         call(x, self.iter_terms())
 
@@ -185,4 +188,7 @@ class TermsAlgebra(TermsLattice):
             pointwise_binary(mul, self.iter_terms(), other.iter_terms())
         )
 
-
+    def __truediv__(self, other):
+        def div(x, y):
+            return y and x/y
+        return self.from_terms(pointwise_binary(div, self.iter_terms(), other.iter_terms()))

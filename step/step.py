@@ -3,7 +3,7 @@ from numpy import array
 from itertools import islice
 from bisect import bisect
 
-class StepFunction(TermsAlgera):
+class StepFunction(TermsAlgebra):
     def __init__(self, mat):
         self.mat = mat
 
@@ -31,4 +31,3 @@ class StepFunction(TermsAlgera):
 
     def __neg__(self):
         return type(self)(self.mat * (-1, 0))
-
