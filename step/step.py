@@ -3,6 +3,7 @@ from numpy import array
 from itertools import islice
 from bisect import bisect
 
+
 class StepFunction(TermsAlgebra):
     def __init__(self, mat):
         self.mat = mat

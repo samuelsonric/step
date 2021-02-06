@@ -190,5 +190,8 @@ class TermsAlgebra(TermsLattice):
 
     def __truediv__(self, other):
         def div(x, y):
-            return y and x/y
-        return self.from_terms(pointwise_binary(div, self.iter_terms(), other.iter_terms()))
+            return y and x / y
+
+        return self.from_terms(
+            pointwise_binary(div, self.iter_terms(), other.iter_terms())
+        )
