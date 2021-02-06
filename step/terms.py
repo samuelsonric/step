@@ -171,7 +171,7 @@ class TermsLattice(Terms):
         return self <= other and not self == other
 
 
-class TermsVectorSpace(Terms):
+class TermsGroup(Terms):
     def __neg__(self, other):
         return self.from_terms(pointwise_unary(neg, self.iter_terms()))
 
