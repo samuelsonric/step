@@ -118,6 +118,10 @@ class Terms:
     def from_triples(cls, triples):
         return cls.from_terms(terms_of_triples(iter(triples)))
 
+    @classmethod
+    def from_function(cls, fun, start=-10, stop=10, num_steps=100):
+        return self.from_terms(approx(fun, start, stop, num_steps))
+
     def iter_terms(self):
         raise NotImplementedError
 
@@ -167,11 +171,7 @@ class TermsLattice(Terms):
         return self <= other and not self == other
 
 
-class TermsAlgebra(TermsLattice):
-    @classmethod
-    def from_function(cls, fun, start=-10, stop=10, num_steps=100):
-        return self.from_terms(approx(fun, start, stop, num_steps))
-
+class TermsVectorSpace(Terms):
     def __neg__(self, other):
         return self.from_terms(pointwise_unary(neg, self.iter_terms()))
 

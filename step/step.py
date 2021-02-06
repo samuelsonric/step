@@ -1,10 +1,10 @@
-from step.terms import TermsAlgebra
+from step.terms import TermsLattice, TermsVectorSpace
 from numpy import array
 from itertools import islice
 from bisect import bisect
 
 
-class StepFunction(TermsAlgebra):
+class StepFunction(TermsLattice, TermsVectorSpace):
     def __init__(self, mat):
         self.mat = mat
 
