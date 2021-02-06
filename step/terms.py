@@ -152,40 +152,38 @@ class Terms:
         return f"{type(self).__name__}({self.repr_sep.join(l)})"
 
 
-class TermsLattice(Terms):
-    def __and__(self, other):
+def pwbin(op):
+    @wraps(op)
+    def inner(self, other):
         return self.from_terms(
-            pointwise_binary(min, self.iter_terms(), other.iter_terms())
+            pointwise_binary(op, self.iter_terms(), other.iter_terms())
         )
 
+    return inner
+
+
+def pwun(op):
+    @wraps(op)
+    def inner(self):
+        return self.from_terms(pointwise_unary(op, self.iter_terms()))
+
+    return inner
+
+
+class TermsLattice(Terms):
+    @pwbin
+    def __and__(self, other):
+        return min(self, other)
+
+    @pwbin
     def __or__(self, other):
-        return self.from_terms(
-            pointwise_binary(max, self.iter_terms(), other.iter_terms())
-        )
+        return min(self, other)
 
     def __le__(self, other):
         return self == self & other
 
     def __lt__(self, other):
         return self <= other and not self == other
-
-
-def pwbin(method):
-    @wraps(method)
-    def inner(self, other):
-        return self.from_terms(
-            pointwise_binary(method, self.iter_terms(), other.iter_terms())
-        )
-
-    return inner
-
-
-def pwun(method):
-    @wraps(method)
-    def inner(self):
-        return self.from_terms(pointwise_unary(method, self.iter_terms()))
-
-    return inner
 
 
 class TermsAlgebra(TermsLattice):
