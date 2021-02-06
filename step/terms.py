@@ -110,8 +110,16 @@ class Terms:
     repr_sep = " + "
     repr_num = 3
 
+    @classmethod
+    def from_terms(cls, terms):
+        raise NotImplementedError
+
+    @classmethod
+    def from_triples(cls, triples):
+        return cls.from_terms(terms_of_triples(iter(triples)))
+
     def iter_terms(self):
-        ...
+        raise NotImplementedError
 
     def iter_triples(self):
         yield from triples_of_terms(self.iter_terms())
@@ -137,14 +145,6 @@ class Terms:
 
 
 class TermsLattice(Terms):
-    @classmethod
-    def from_terms(cls, terms):
-        raise NotImplementedError
-
-    @classmethod
-    def from_triples(cls, triples):
-        return cls.from_terms(terms_of_triples(iter(triples)))
-
     def __and__(self, other):
         return self.from_terms(
             pointwise_binary(min, self.iter_terms(), other.iter_terms())
@@ -164,7 +164,7 @@ class TermsLattice(Terms):
         return self == self & other
 
     def __lt__(self, other):
-        return self <= other and not self == othr
+        return self <= other and not self == other
 
 
 class TermsAlgebra(TermsLattice):

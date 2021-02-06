@@ -1,6 +1,6 @@
 from step.terms import Terms
 from step.step import StepFunction
-from numpy import maximum, minimum, fromiter, float64
+from numpy import maximum, minimum, array, fromiter, float64
 from collections import OrderedDict
 
 
@@ -13,12 +13,20 @@ class CompositeFunction(Terms):
         return self.left[self.right(x)]
 
     @classmethod
-    def from_step(cls, sfun):
+    def from_terms(cls, terms):
         left = OrderedDict()
         right = []
-        for i in sfun.mat:
+        for i in terms:
             right.append((left.setdefault(i[0], len(left)), i[1]))
         return cls(fromiter(left, float64), StepFunction.from_array(right))
+
+    @classmethod
+    def from_step(cls, step):
+        return cls.from_terms(step.iter_terms())
+
+    @classmethod
+    def from_intervals(cls, intervals):
+        return cls(array((1, 0)), StepFunction.from_terms(intervals.iter_terms()))
 
     def iter_terms(self):
         for i in self.right.iter_terms():
