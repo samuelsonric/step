@@ -1,7 +1,8 @@
 from math import inf
 from itertools import zip_longest
 from numpy import linspace, array
-from operator import mul, neg, add, sub, not_, truth
+from operator import mul, not_, truth
+from functools import wraps
 
 
 def equal(x, y):
@@ -169,32 +170,44 @@ class TermsLattice(Terms):
         return self <= other and not self == other
 
 
+def pwbin(method):
+    @wraps(method)
+    def inner(self, other):
+        return self.from_terms(
+            pointwise_binary(method, self.iter_terms(), other.iter_terms())
+        )
+
+    return inner
+
+
+def pwun(method):
+    @wraps(method)
+    def inner(self):
+        return self.from_terms(pointwise_unary(method, self.iter_terms()))
+
+    return inner
+
+
 class TermsAlgebra(TermsLattice):
-    def __neg__(self, other):
-        return self.from_terms(pointwise_unary(neg, self.iter_terms()))
+    @pwun
+    def __neg__(self):
+        return -self
 
+    @pwbin
     def __add__(self, other):
-        return self.from_terms(
-            pointwise_binary(add, self.iter_terms(), other.iter_terms())
-        )
+        return self + other
 
+    @pwbin
     def __sub__(self, other):
-        return self.from_terms(
-            pointwise_binary(sub, self.iter_terms(), other.iter_terms())
-        )
+        return self - other
 
+    @pwbin
     def __mul__(self, other):
-        return self.from_terms(
-            pointwise_binary(mul, self.iter_terms(), other.iter_terms())
-        )
+        return self * other
 
+    @pwbin
     def __floordiv__(self, other):
-        def div(x, y):
-            return y and x / y
-
-        return self.from_terms(
-            pointwise_binary(div, self.iter_terms(), other.iter_terms())
-        )
+        return other and self / other
 
     def __mod__(self, other):
         # return self - ((self // other) * other)
@@ -211,27 +224,30 @@ class TermsAlgebra(TermsLattice):
             )
         )
 
+    @pwun
     def __abs__(self):
-        return self.from_terms(pointwise_unary(abs, self.iter_terms()))
+        return abs(self)
 
+    @pwun
     def ppart(self):
-        return self.from_terms(
-            pointwise_unary(lambda x: x > 0 and x, self.iter_terms())
-        )
+        return self > 0 and self
 
+    @pwun
     def npart(self):
-        return self.from_terms(
-            pointwise_unary(lambda x: x < 0 and x, self.iter_terms())
-        )
+        return self < 0 and self
 
+    @pwun
     def supp(self):
-        return self.from_terms(pointwise_unary(truth, self.iter_terms()))
+        return truth(self)
 
+    @pwun
     def ker(self):
-        return self.from_terms(pointwise_unary(not_, self.iter_terms()))
+        return not self
 
+    @pwun
     def pset(self):
-        return self.from_terms(pointwise_unary(lambda x: x > 0, self.iter_terms()))
+        return self > 0
 
+    @pwun
     def nset(self):
-        return self.from_terms(pointwise_unary(lambda x: x < 0, self.iter_terms()))
+        return self < 0
