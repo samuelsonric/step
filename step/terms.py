@@ -1,7 +1,7 @@
 from math import inf
 from itertools import zip_longest
 from numpy import linspace, array
-from operator import mul, neg, add, sub
+from operator import mul, neg, add, sub, not_, truth
 
 
 def equal(x, y):
@@ -188,10 +188,50 @@ class TermsAlgebra(TermsLattice):
             pointwise_binary(mul, self.iter_terms(), other.iter_terms())
         )
 
-    def __truediv__(self, other):
+    def __floordiv__(self, other):
         def div(x, y):
             return y and x / y
 
         return self.from_terms(
             pointwise_binary(div, self.iter_terms(), other.iter_terms())
         )
+
+    def __mod__(self, other):
+        # return self - ((self // other) * other)
+        # return self * (self.supp() * other.ker())
+        return self.from_terms(
+            pointwise_binary(
+                mul,
+                self.iter_terms(),
+                pointwise_binary(
+                    mul,
+                    pointwise_unary(truth, self.iter_terms()),
+                    pointwise_unary(not_, other.iter_terms()),
+                ),
+            )
+        )
+
+    def __abs__(self):
+        return self.from_terms(pointwise_unary(abs, self.iter_terms()))
+
+    def ppart(self):
+        return self.from_terms(
+            pointwise_unary(lambda x: x > 0 and x, self.iter_terms())
+        )
+
+    def npart(self):
+        return self.from_terms(
+            pointwise_unary(lambda x: x < 0 and x, self.iter_terms())
+        )
+
+    def supp(self):
+        return self.from_terms(pointwise_unary(truth, self.iter_terms()))
+
+    def ker(self):
+        return self.from_terms(pointwise_unary(not_, self.iter_terms()))
+
+    def pset(self):
+        return self.from_terms(pointwise_unary(lambda x: x > 0, self.iter_terms()))
+
+    def nset(self):
+        return self.from_terms(pointwise_unary(lambda x: x < 0, self.iter_terms()))
