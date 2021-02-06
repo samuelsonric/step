@@ -23,6 +23,10 @@ class UnionOfIntervals(TermsLattice):
         return cls(coef[0], array(ep))
 
     @classmethod
+    def from_indicator(cls, indicator):
+        return cls.from_terms(indicator.iter_terms())
+
+    @classmethod
     def from_endpoints(cls, endpoints):
         ep = deque(endpoints)
         if not (p := (ep and -inf == ep[0])):
