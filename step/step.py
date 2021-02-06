@@ -1,9 +1,9 @@
-from step.terms import Terms, TermsLattice, TermsGroup, TermsMonoid
+from step.terms import TermsAlgebra
 from numpy import array
 from itertools import islice
 from bisect import bisect
 
-class MatGroup(TermsGroup):
+class StepFunction(TermsAlgera):
     def __init__(self, mat):
         self.mat = mat
 
@@ -31,8 +31,4 @@ class MatGroup(TermsGroup):
 
     def __neg__(self):
         return type(self)(self.mat * (-1, 0))
-
-
-class StepFunction(MatGroup, TermsLattice, TermsMonoid, Terms):
-    ...
 

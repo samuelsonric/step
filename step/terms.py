@@ -148,7 +148,7 @@ class Terms:
         return f"{type(self).__name__}({self.repr_sep.join(l)})"
 
 
-class TermsLattice:
+class TermsLattice(Terms):
     def __and__(self, other):
         return self.from_terms(
             pointwise_binary(min, self.iter_terms(), other.iter_terms())
@@ -166,7 +166,7 @@ class TermsLattice:
         return self <= other and not self == other
 
 
-class TermsGroup:
+class TermsAlgebra(TermsLattice):
     def __neg__(self, other):
         return self.from_terms(pointwise_unary(neg, self.iter_terms()))
 
@@ -180,7 +180,6 @@ class TermsGroup:
             pointwise_binary(sub, self.iter_terms(), other.iter_terms())
         )
 
-class TermsMonoid:
     def __mul__(self, other):
         return self.from_terms(
             pointwise_binary(mul, self.iter_terms(), other.iter_terms())
