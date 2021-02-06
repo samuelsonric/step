@@ -177,7 +177,7 @@ class TermsLattice(Terms):
 
     @pwbin
     def __or__(self, other):
-        return min(self, other)
+        return max(self, other)
 
     def __le__(self, other):
         return self == self & other
