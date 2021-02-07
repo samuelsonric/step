@@ -107,17 +107,13 @@ def approx_0(fun, start, stop, num_steps):
 
 
 class Terms:
-    repr_pat = "{}[{}, {})"
+    repr_pat = "{0}[{1}, {2})"
     repr_sep = " + "
     repr_num = 3
 
     @classmethod
     def from_terms(cls, terms):
         raise NotImplementedError
-
-    @classmethod
-    def from_function(cls, fun, start=-10, stop=10, num_steps=100):
-        return self.from_terms(approx(fun, start, stop, num_steps))
 
     def iter_terms(self):
         raise NotImplementedError

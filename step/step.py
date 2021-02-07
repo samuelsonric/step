@@ -1,6 +1,6 @@
-from step.terms import TermsAlgebra, terms_of_triples
-from numpy import array, tile
-from itertools import islice
+from step.terms import TermsAlgebra, terms_of_triples, approx
+from numpy import array, fromiter
+from itertools import islice, cycle
 from bisect import bisect
 
 
@@ -25,8 +25,12 @@ class StepFunction(TermsAlgebra):
         return cls.from_terms(terms_of_triples(iter(triples)))
 
     @classmethod
+    def approx(cls, fun, start, stop, num_steps=100):
+        return cls.from_terms(approx(fun, start, stop, num_steps), y_dtype='float', x_dtype='float')
+
+    @classmethod
     def from_intervals(cls, intervals, y_dtype='bool'):
-        return cls(tile(array((intervals.par, not intervals.par), dtype=y_dtype), len(intervals.x) // 2 + 1), intervals.x)
+        return cls(fromiter(islice(cycle((intervals.par, not intervals.par)), len(intervals.x)), dtype=y_dtype), intervals.x)
 
     @classmethod
     def from_composite(cls, cfun, y_dtype=None):
