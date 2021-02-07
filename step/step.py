@@ -1,4 +1,4 @@
-from step.terms import TermsAlgebra
+from step.terms import TermsAlgebra, terms_of_triples
 from numpy import array, tile
 from itertools import islice
 from bisect import bisect
@@ -19,6 +19,10 @@ class StepFunction(TermsAlgebra):
     @classmethod
     def from_terms(cls, terms, y_dtype=None, x_dtype=None):
         return cls.from_sequences(*zip(*terms), y_dtype, x_dtype)
+
+    @classmethod
+    def from_triples(cls, triples, y_dtype=None, x_dtype=None):
+        return cls.from_terms(terms_of_triples(iter(triples))
 
     @classmethod
     def from_intervals(cls, intervals, y_dtype='bool'):

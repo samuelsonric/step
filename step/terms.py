@@ -116,10 +116,6 @@ class Terms:
         raise NotImplementedError
 
     @classmethod
-    def from_triples(cls, triples):
-        return cls.from_terms(terms_of_triples(iter(triples)))
-
-    @classmethod
     def from_function(cls, fun, start=-10, stop=10, num_steps=100):
         return self.from_terms(approx(fun, start, stop, num_steps))
 
