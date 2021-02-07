@@ -47,7 +47,7 @@ UnionOfIntervals([-5.0, -2.0) U [-1.0, 1.0) U [2.0, 5.0))
 | ----------- | ------------|
 | `~x`        | complementation |
 | `x & y	`     | intersection |
-| `x | y`     | union |
+| <code>x &#124; y</code> | union |
 | `x - y`     | set difference |
 | `x ^ y`     | symmetric difference |
 | `x <= y`    | inclusion |
@@ -111,7 +111,7 @@ StepFunction(0.7568024953079282[-4.0, -3.5) + 0.35078322768961984[-3.5, -3.0) + 
 | `x // y`    | Lebesgue decomposition (absolutely continuous) |
 | `x % y`     | Lebesgue decomposition (singular) |
 | `x & y`     | minumum |
-| `x | y`     | maximum |
+| <code>x &#124; y</code> | maximum |
 | `x <= y`    | pointwise order |
 | `x < y`     | pointwise order (strict) |
 | `x(0)`      | evaluation |
