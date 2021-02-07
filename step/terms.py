@@ -57,19 +57,19 @@ def reduce_terms(x):
             yield i
 
 
-def pointwise_binary(op, x, y):
-    yield from reduce_terms(pointwise_binary_0(op, x, y))
+def binary_op(op, x, y):
+    yield from reduce_terms(binary_op_0(op, x, y))
 
 
-def pointwise_unary(op, x):
-    yield from reduce_terms(pointwise_unary_0(op, x))
+def unary_op(op, x):
+    yield from reduce_terms(unary_op_0(op, x))
 
 
 def approx(fun, start, stop, num_steps):
     yield from reduce_terms(approx_0(fun, start, stop, num_steps))
 
 
-def pointwise_binary_0(op, x, y):
+def binary_op_0(op, x, y):
     i = next(x)
     j = next(y)
     sentinel = (0, inf)
@@ -91,7 +91,7 @@ def pointwise_binary_0(op, x, y):
             j = next(y, sentinel)
 
 
-def pointwise_unary_0(op, x):
+def unary_op_0(op, x):
     for i in x:
         yield (op(i[0]), i[1])
 
@@ -133,7 +133,7 @@ class Terms:
         return leb(self.iter_terms())
 
     def __matmul__(self, other):
-        return leb(pointwise_binary(mul, self.iter_terms(), other.iter_terms()))
+        return leb(binary_op(mul, self.iter_terms(), other.iter_terms()))
 
     def __call__(self, x):
         call(x, self.iter_terms())
@@ -152,30 +152,30 @@ class Terms:
         return f"{type(self).__name__}({self.repr_sep.join(l)})"
 
 
-def pwbin(op):
+def binary(op):
     @wraps(op)
     def inner(self, other):
         return self.from_terms(
-            pointwise_binary(op, self.iter_terms(), other.iter_terms())
+            binary_op(op, self.iter_terms(), other.iter_terms())
         )
 
     return inner
 
 
-def pwun(op):
+def unary(op):
     @wraps(op)
     def inner(self):
-        return self.from_terms(pointwise_unary(op, self.iter_terms()))
+        return self.from_terms(unary_op(op, self.iter_terms()))
 
     return inner
 
 
 class TermsLattice(Terms):
-    @pwbin
+    @binary
     def __and__(self, other):
         return min(self, other)
 
-    @pwbin
+    @binary
     def __or__(self, other):
         return max(self, other)
 
@@ -187,65 +187,54 @@ class TermsLattice(Terms):
 
 
 class TermsAlgebra(TermsLattice):
-    @pwun
+    @unary
     def __neg__(self):
         return -self
 
-    @pwbin
+    @binary
     def __add__(self, other):
         return self + other
 
-    @pwbin
+    @binary
     def __sub__(self, other):
         return self - other
 
-    @pwbin
+    @binary
     def __mul__(self, other):
         return self * other
 
-    @pwbin
+    @binary
     def __floordiv__(self, other):
         return other and self / other
 
+    @binary
     def __mod__(self, other):
-        # return self - ((self // other) * other)
-        # return self * (self.supp() * other.ker())
-        return self.from_terms(
-            pointwise_binary(
-                mul,
-                self.iter_terms(),
-                pointwise_binary(
-                    mul,
-                    pointwise_unary(truth, self.iter_terms()),
-                    pointwise_unary(not_, other.iter_terms()),
-                ),
-            )
-        )
+        return other == 0 and self
 
-    @pwun
+    @unary
     def __abs__(self):
         return abs(self)
 
-    @pwun
+    @unary
     def ppart(self):
         return self > 0 and self
 
-    @pwun
+    @unary
     def npart(self):
         return self < 0 and self
 
-    @pwun
+    @unary
     def supp(self):
         return truth(self)
 
-    @pwun
+    @unary
     def ker(self):
         return not self
 
-    @pwun
+    @unary
     def pset(self):
         return self > 0
 
-    @pwun
+    @unary
     def nset(self):
         return self < 0

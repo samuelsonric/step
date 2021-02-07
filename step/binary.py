@@ -11,31 +11,35 @@ class UnionOfIntervals(TermsLattice):
     repr_sep = " U "
 
     def __init__(self, par, x):
-        self.par = par
+        self.par = bool(par)
         self.x = x
 
     def __call__(self, x):
         return self.par == bisect(self.x, x) % 2
 
     @classmethod
-    def from_terms(cls, terms):
+    def from_sequence(cls, par, x, x_dtype=None):
+        return cls(par, array(x, dtype=x_dtype))
+
+    @classmethod
+    def from_terms(cls, terms, x_dtype=None):
         y, x = zip(*terms)
-        return cls(y[0], array(x))
+        return cls.from_sequence(y[0], x, x_dtype)
+
+    @classmethod
+    def from_endpoints(cls, endpoints, x_dtype=None):
+        x = deque(endpoints)
+        if not (par := (x and -inf == x[0])):
+            x.appendleft(-inf)
+        return cls.from_sequence(par, x, x_dtype)
+
+    @classmethod
+    def from_pairs(cls, pairs, x_dtype=None):
+        return cls.from_endpoints(chain.from_iterable(pairs), x_dtype)
 
     @classmethod
     def from_indicator(cls, indicator):
-        return cls.from_terms(indicator.iter_terms())
-
-    @classmethod
-    def from_endpoints(cls, x):
-        ep = deque(x)
-        if not (p := (ep and -inf == ep[0])):
-            ep.appendleft(-inf)
-        return cls(p, array(ep))
-
-    @classmethod
-    def from_pairs(cls, pairs):
-        return cls.from_endpoints(chain.from_iterable(pairs))
+        return cls(indicator.y[0], indicator.x)
 
     def iter_terms(self):
         c = cycle((self.par, not self.par))
