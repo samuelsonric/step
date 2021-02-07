@@ -22,7 +22,7 @@ class StepFunction(TermsAlgebra):
 
     @classmethod
     def from_triples(cls, triples, y_dtype=None, x_dtype=None):
-        return cls.from_terms(terms_of_triples(iter(triples))
+        return cls.from_terms(terms_of_triples(iter(triples)))
 
     @classmethod
     def from_intervals(cls, intervals, y_dtype='bool'):
