@@ -158,9 +158,8 @@ def unary(op):
 
 def scalar(op):
     @wraps(op)
-    @unary
-    def inner(x):
-        return op(x, a)
+    def inner(self, a):
+        return self.from_terms(unary_op(lambda x: op(x, a), self.iter_terms()))
 
     return inner
 
