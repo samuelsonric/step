@@ -5,17 +5,17 @@ from functools import cached_property
 from math import inf
 
 
-class PullBack:
+class Pullback:
     def __init__(self, vec):
         self.vec = vec
 
     @classmethod
     def from_step(cls, step):
-        return cls(pull_back_0(step)[0])
+        return cls(pullback_0(step)[0])
 
     def __matmul__(self, other):
         if other.ndim > 1:
-            return PullBack(self.vec @ other)
+            return Pullback(self.vec @ other)
         else:
             return self.vec @ other
 
@@ -24,7 +24,7 @@ class PullBack:
         raise NotImplementedError
 
 
-def pull_back_0(step):
+def pullback_0(step):
     a = unique(step.y)
     return (
         array(tuple(map(step.preimg, a))),
@@ -32,9 +32,9 @@ def pull_back_0(step):
     )
 
 
-def pull_back(step):
+def pullback(step):
     vec, a = pull_back_0(step)
-    return (PullBack(vec), a)
+    return (Pullback(vec), a)
 
 
 def conditional_distr_0(m, x, y):
