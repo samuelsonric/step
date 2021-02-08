@@ -1,6 +1,6 @@
 from math import inf
 from itertools import zip_longest
-from numpy import linspace, array
+from numpy import linspace, array, fromiter, nan_to_num
 from operator import mul, not_, truth
 from functools import wraps
 
@@ -41,12 +41,12 @@ def terms_of_triples(x):
     yield from map(terms_of_triple, x)
 
 
-def leb_of_triple(i):
+def integrate_triple(i):
     return i[0] and i[0] * (i[2] - i[1])
 
 
-def leb(x):
-    return sum(map(leb_of_triple, triples_of_terms(x)))
+def integrate(x):
+    return sum(map(integrate_triple, triples_of_terms(x)))
 
 
 def reduce_terms(x):
@@ -105,7 +105,6 @@ def approx_0(fun, start, stop, num_steps):
     yield from map(graph_of_fun(fun), linspace(start, stop, num_steps, endpoint=False))
     yield (0, stop)
 
-
 class Terms:
     repr_pat = "{0}[{1}, {2})"
     repr_sep = " + "
@@ -121,11 +120,11 @@ class Terms:
     def iter_triples(self):
         yield from triples_of_terms(self.iter_terms())
 
-    def leb(self):
-        return leb(self.iter_terms())
-
     def __matmul__(self, other):
-        return leb(binary_op(mul, self.iter_terms(), other.iter_terms()))
+        if isinstance(other, Terms):
+            return integrate(binary_op(mul, self.iter_terms(), other.iter_terms()))
+        else:
+            return fromiter(map(self.__matmul__, other.preimg), 'float')
 
     def __call__(self, x):
         call(x, self.iter_terms())

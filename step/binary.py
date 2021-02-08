@@ -18,24 +18,24 @@ class UnionOfIntervals(TermsLattice):
         return self.par == bisect(self.x, x) % 2
 
     @classmethod
-    def from_sequence(cls, par, x, x_dtype=None):
-        return cls(par, array(x, dtype=x_dtype))
+    def from_sequence(cls, par, x):
+        return cls(par, array(x))
 
     @classmethod
-    def from_terms(cls, terms, x_dtype=None):
+    def from_terms(cls, terms):
         y, x = zip(*terms)
-        return cls.from_sequence(y[0], x, x_dtype)
+        return cls.from_sequence(y[0], x)
 
     @classmethod
-    def from_endpoints(cls, endpoints, x_dtype=None):
+    def from_endpoints(cls, endpoints):
         x = deque(endpoints)
         if not (par := (x and -inf == x[0])):
             x.appendleft(-inf)
-        return cls.from_sequence(par, x, x_dtype)
+        return cls.from_sequence(par, x)
 
     @classmethod
-    def from_pairs(cls, pairs, x_dtype=None):
-        return cls.from_endpoints(chain.from_iterable(pairs), x_dtype)
+    def from_pairs(cls, pairs):
+        return cls.from_endpoints(chain.from_iterable(pairs))
 
     @classmethod
     def from_indicator(cls, indicator):

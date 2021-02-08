@@ -1,75 +1,61 @@
-from step.terms import Terms
+from step.terms import reduce_terms
 from step.step import StepFunction
-from numpy import maximum, minimum, array
-from collections import OrderedDict
+from numpy import ones, arange, unique, array, eye, nan_to_num
+from functools import cached_property
+from math import inf
 
-
-class CompositeFunction(Terms):
-    def __init__(self, y, step):
-        self.y = y
-        self.step = step
-
-    def __call__(self, x):
-        return self.y[self.step(x)]
+class PullBack:
+    def __init__(self, mtx, x):
+        self.mtx = mtx
+        self.x = x
 
     @classmethod
-    def from_sequence(cls, y, step, y_dtype=None):
-        return cls(array(y, dtype=y_dtype), step)
+    def from_step(cls, step):
+        return cls(*pull_back_0(step)[:-1]) 
 
+    def __matmul__(self, other):
+        if other.ndim > 1:
+            return PullBack(self.mtx @ other, self.x)
+        else:
+            return StepFunction.from_terms(zip(self.mtx @ other, self.x))
+        
+    @cached_property
+    def preimg(self):
+        return tuple(map(self.__matmul__, eye(self.mtx.shape[1])))
 
-    @classmethod
-    def from_step(cls, step, y_dtype=None):
-        y = OrderedDict()
-        step_y = []
-        for i in step.iter_terms():
-            step_y.append(y.setdefault(i[0], len(y)))
-        return cls.from_sequence(
-            y = tuple(y),
-            step = StepFunction.from_sequences(
-                x = step.x,
-                y = step_y,
-                y_dtype = 'int',
-            ),
-            y_dtype = y_dtype,
-        )
-
-
-    @classmethod
-    def from_terms(cls, terms, y_dtype=None, x_dtype=None):
-        return cls.from_step(StepFunction.from_terms(terms, y_dtype, x_dtype))
-
-
-    @classmethod
-    def from_intervals(cls, intervals, y_dtype='bool'):
-        return cls.from_sequence((True, False), StepFunction.from_intervals(intervals, 'int'), y_dtype)
-
-    def iter_terms(self):
-        for i in self.step.iter_terms():
-            yield (self.y[i[0]], i[1])
-
-    def __neg__(self):
-        return type(self)(-self.left, self.right)
-
-    def __add__(self, other):
-        return type(self)(self.left + other.left, self.right)
-
-    def __sub__(self, other):
-        return type(self)(self.left - other.left, self.right)
-
+    # TODO
     def __mul__(self, other):
-        return type(self)(self.left * other.left, self.right)
+        raise NotImplementedError
 
-    def __or__(self, other):
-        return type(self)(maximum(self.left, other.left), self.right)
+'''
+def pull_back_0(step):
+    a, col_ind = unique(step.y, return_inverse=True)
+    data = ones(len(col_ind), dtype='bool')
+    row_ind = arange(len(col_ind), dtype='int')
 
-    def __and__(self, other):
-        return type(self)(minimum(self.left, other.left), self.right)
+    return (csc_matrix((data, (row_ind, col_ind))), step.x, a)
+'''
 
-    def __eq__(self, other):
-        return (self.left == other.left).all()
 
-    def __le__(self, other):
-        return (self.left <= other.left).all()
+def pull_back(step):
+    mtx, x, a = pull_back_0(step)
+    return (PullBack(mtx, x), a)
 
-    def __lt__(self, other):
-        return (self.left < other.left).all()
+
+def pull_back_0(step):
+    a, col_ind = unique(step.y, return_inverse=True)
+    id_ = eye(len(a))
+    mtx = array(tuple(map(id_.__getitem__, col_ind)))
+    return (mtx, step.x, a)
+
+
+def conditional_kernel(m, x, y):
+    return conditional_kernel_0(m, x.preimg, y.preimg)
+
+def conditional_kernel_0(m, x_preimg, y_preimg):
+    a = array(tuple(tuple(m @ (i * j) for j in y_preimg) for i in x_preimg))
+    s = a.sum(axis=1).reshape(-1, 1)
+    s[s==0] = 1
+    return a/s
+
+

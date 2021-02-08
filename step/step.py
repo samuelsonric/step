@@ -2,7 +2,7 @@ from step.terms import TermsAlgebra, terms_of_triples, approx
 from numpy import array, fromiter
 from itertools import islice, cycle
 from bisect import bisect
-
+from math import inf
 
 class StepFunction(TermsAlgebra):
     def __init__(self, y, x):
@@ -13,31 +13,34 @@ class StepFunction(TermsAlgebra):
         return self.y[bisect(self.x, x) - 1]
 
     @classmethod
-    def from_sequences(cls, y, x, y_dtype=None, x_dtype=None):
-        return cls(array(y, dtype=y_dtype), array(x, dtype=x_dtype))
+    def from_sequences(cls, y, x, y_dtype=None):
+        return cls(array(y, dtype=y_dtype), array(x))
 
     @classmethod
-    def from_terms(cls, terms, y_dtype=None, x_dtype=None):
-        return cls.from_sequences(*zip(*terms), y_dtype, x_dtype)
+    def from_terms(cls, terms, y_dtype=None):
+        return cls.from_sequences(*zip(*terms), y_dtype)
 
     @classmethod
-    def from_triples(cls, triples, y_dtype=None, x_dtype=None):
-        return cls.from_terms(terms_of_triples(iter(triples)))
+    def from_triples(cls, triples, y_dtype=None):
+        return cls.from_terms(terms_of_triples(iter(triples)), y_dtype)
 
     @classmethod
     def approx(cls, fun, start, stop, num_steps=100):
-        return cls.from_terms(approx(fun, start, stop, num_steps), y_dtype='float', x_dtype='float')
+        return cls.from_terms(approx(fun, start, stop, num_steps), y_dtype='float')
+
 
     @classmethod
     def from_intervals(cls, intervals, y_dtype='bool'):
-        return cls(fromiter(islice(cycle((intervals.par, not intervals.par)), len(intervals.x)), dtype=y_dtype), intervals.x)
-
-    @classmethod
-    def from_composite(cls, cfun, y_dtype=None):
-        return cls(array(tuple(map(cfun.y.__getitem__, cfun.step.y)), dtype=y_dtype), cfun.step.x)
+        p = intervals.par
+        return cls(
+            fromiter(islice(cycle((p, not p)), len(intervals.x)), dtype=y_dtype),
+            intervals.x
+        )
 
     def iter_terms(self):
         yield from zip(self.y, self.x)
 
     def __neg__(self):
         return type(self)(-self.y, self.x)
+
+leb = StepFunction.from_triples(((True, -inf, inf),))
