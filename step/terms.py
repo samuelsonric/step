@@ -251,4 +251,4 @@ class TermsAlgebra(TermsLattice):
         return self.supp() <= other.supp()
 
     def __rshift__(self, other):
-        return other << self
+        return self.supp() >= other.supp()
