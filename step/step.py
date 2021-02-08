@@ -1,4 +1,4 @@
-from step.terms import TermsAlgebra, terms_of_triples, approx
+from step.terms import Terms, TermsAlgebra, terms_of_triples, approx
 from numpy import array, fromiter
 from itertools import islice, cycle
 from bisect import bisect
@@ -42,5 +42,14 @@ class StepFunction(TermsAlgebra):
 
     def __neg__(self):
         return type(self)(-self.y, self.x)
+
+    def __mul__(self, other):
+        if isinstance(other, Terms):
+            return super().__mul__(other)
+        else:
+            return type(self)(other * self.y, self.x)
+
+    def __rmul__(self, other):
+        return self * other
 
 leb = StepFunction.from_triples(((True, -inf, inf),))

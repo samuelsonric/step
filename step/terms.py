@@ -124,7 +124,7 @@ class Terms:
         if isinstance(other, Terms):
             return integrate(binary_op(mul, self.iter_terms(), other.iter_terms()))
         else:
-            return fromiter(map(self.__matmul__, other.preimg), 'float')
+            return fromiter(map(self.__matmul__, other.vec), 'float')
 
     def __call__(self, x):
         call(x, self.iter_terms())
@@ -179,53 +179,65 @@ class TermsLattice(Terms):
 
 class TermsAlgebra(TermsLattice):
     @unary
-    def __neg__(self):
-        return -self
+    def __neg__(x):
+        return -x
 
     @binary
-    def __add__(self, other):
-        return self + other
+    def __add__(x, y):
+        return x + y
 
     @binary
-    def __sub__(self, other):
-        return self - other
+    def __sub__(x, y):
+        return x - y
 
     @binary
-    def __mul__(self, other):
-        return self * other
+    def __mul__(x, y):
+        return x * y
 
     @binary
-    def __floordiv__(self, other):
-        return other and self / other
+    def __floordiv__(x, y):
+        return y and x / y
 
     @binary
-    def __mod__(self, other):
-        return other == 0 and self
+    def __mod__(x, y):
+        return y == 0 and x
 
     @unary
-    def __abs__(self):
-        return abs(self)
+    def __abs__(x):
+        return abs(x)
+
+    def __pow__(self, n):
+        @unary
+        def topow(x):
+            return x ** n
+        return topow(self)
 
     @unary
-    def ppart(self):
-        return self > 0 and self
+    def ppart(x):
+        return x > 0 and x
 
     @unary
-    def npart(self):
-        return self < 0 and self
+    def npart(x):
+        return x < 0 and x
+
+    def preimg(self, y):
+        @unary
+        def equalto(x):
+            return x == y
+        return equalto(self)
 
     @unary
-    def supp(self):
-        return truth(self)
+    def supp(x):
+        return truth(x)
 
     @unary
-    def ker(self):
-        return not self
+    def ker(x):
+        return not x
 
     @unary
-    def pset(self):
-        return self > 0
+    def pset(x):
+        return x > 0
 
     @unary
-    def nset(self):
-        return self < 0
+    def nset(x):
+        return x < 0
