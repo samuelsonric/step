@@ -122,7 +122,7 @@ StepFunction(1.6[-4.0, -3.5) + 1.225[-3.5, -3.0) + 0.9[-3.0, -2.5) + ...)
 ### Measure and Integration
 Every step function *f* determines a signed measure *m* whose integral is given by the formula
 
-<center> ∫ *m*(dx) *g*(x) = ∫ dx *f*(x) *g*(x). </center>
+∫ *m*(dx) *g*(x) = ∫ dx *f*(x) *g*(x).
 
 Step functions integrate other step functions using the matrix multiplication operator `@`.
 
