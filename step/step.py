@@ -1,8 +1,10 @@
 from step.terms import Terms, TermsAlgebra, terms_of_triples, approx
+from step.plotting import plot_step
 from numpy import array, fromiter
 from itertools import islice, cycle
 from bisect import bisect
 from math import inf
+import matplotlib.pyplot as plt
 
 
 class StepFunction(TermsAlgebra):
@@ -40,14 +42,28 @@ class StepFunction(TermsAlgebra):
     def iter_terms(self):
         yield from zip(self.y, self.x)
 
+    def plot(self, color='b', xlim=None, ylim=None, figsize=(4, 3)):
+        plt.figure(figsize=figsize)
+        plot_step(self, color)
+        if xlim is not None:
+            plt.xlim(*xlim)
+        if ylim is not None:
+            plt.ylim(*ylim)
+        plt.show()
+
     def __neg__(self):
-        return type(self)(-self.y, self.x)
+        return StepFunction(-self.y, self.x)
+
+    def __truediv__(self, other):
+        return StepFunction(self.y / other, self.x)
 
     def __mul__(self, other):
         if isinstance(other, Terms):
             return super().__mul__(other)
+        elif other:
+            return StepFunction(self.y * other, self.x)
         else:
-            return type(self)(other * self.y, self.x)
+            return self.from_triples(((0, -inf, inf),))
 
     def __rmul__(self, other):
         return self * other
