@@ -80,4 +80,4 @@ class StepFunction(TermsAlgebra):
         return self * other
 
 
-leb = StepFunction.one(y_dtype='float')
+leb = StepFunction.one(y_dtype="float")

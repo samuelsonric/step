@@ -1,8 +1,6 @@
-from step.terms import reduce_terms
-from step.step import StepFunction
-from numpy import unique, array, vectorize, ndarray
-from functools import cached_property
-from math import inf
+from numpy import unique, ndarray, array, vectorize, fromiter
+from step.step import leb
+from step.terms import Terms
 from collections.abc import Sequence
 
 
@@ -13,10 +11,32 @@ def pullback(step):
         a,
     )
 
-def conditional_distr(m, x, y):
-    a = vectorize(m.__matmul__, otypes=("float",))(x.reshape(-1, 1) @ y.reshape(1, -1))
-    s = a.sum(axis=1).reshape(-1, 1)
-    s[s == 0] = 1
-    return a / s
+
+def normalize(m):
+    def inner(x):
+        p = m @ x
+        if p:
+            return x / p
+        else:
+            return p * x
+
+    return inner
 
 
+class ConditionalExpectation:
+    def __init__(self, E, v):
+        self.E = E
+        self.v = v
+
+    @classmethod
+    def from_pullback(cls, E, pullback):
+        return cls(E, array(tuple(map(normalize(E), pullback))))
+
+    def __matmul__(self, other):
+        if isinstance(other, Terms):
+            return fromiter(map(self.E.__matmul__, self.v * other), dtype="float")
+        elif isinstance(other, (ndarray, Sequence)):
+            vfun = vectorize(self.E.__matmul__, otypes=("float",))
+            return vfun(self.v.reshape(-1, 1) @ other.reshape(1, -1))
+        else:
+            return NotImplemented

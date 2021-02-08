@@ -1,8 +1,9 @@
 from math import inf
 from itertools import zip_longest, chain
-from numpy import linspace, array, fromiter, nan_to_num
+from numpy import linspace, array, fromiter, nan_to_num, ndarray
 from operator import mul, not_, truth
 from functools import wraps
+from collections.abc import Sequence
 
 
 def equal(x, y):
@@ -184,8 +185,10 @@ class TermsAlgebra(TermsLattice):
     def __matmul__(self, other):
         if isinstance(other, Terms):
             return integrate(binary_op(mul, self.iter_terms(), other.iter_terms()))
-        else:
+        elif isinstance(other, (ndarray, Sequence)):
             return fromiter(map(self.__matmul__, other), "float")
+        else:
+            return NotImplemented
 
     @unary
     def __neg__(x):
@@ -217,7 +220,7 @@ class TermsAlgebra(TermsLattice):
 
     @scalar
     def __pow__(x, n):
-        return x**n
+        return x ** n
 
     @unary
     def ppart(x):
