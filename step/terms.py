@@ -156,6 +156,15 @@ def unary(op):
     return inner
 
 
+def scalar(op):
+    @wraps(op)
+    @unary
+    def inner(x):
+        return op(x, a)
+
+    return inner
+
+
 class TermsLattice(Terms):
     @binary
     def __and__(self, other):
@@ -209,12 +218,9 @@ class TermsAlgebra(TermsLattice):
     def __abs__(x):
         return abs(x)
 
-    def __pow__(self, n):
-        @unary
-        def topow(x):
-            return x ** n
-
-        return topow(self)
+    @scalar
+    def __pow__(x, n):
+        return x**n
 
     @unary
     def ppart(x):
@@ -224,12 +230,9 @@ class TermsAlgebra(TermsLattice):
     def npart(x):
         return x < 0 and x
 
-    def preimg(self, y):
-        @unary
-        def equalto(x):
-            return x == y
-
-        return equalto(self)
+    @scalar
+    def preimg(x, a):
+        return x == a
 
     @unary
     def supp(x):
