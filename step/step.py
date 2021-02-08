@@ -42,7 +42,7 @@ class StepFunction(TermsAlgebra):
     def iter_terms(self):
         yield from zip(self.y, self.x)
 
-    def plot(self, color='b', xlim=None, ylim=None, figsize=(4, 3)):
+    def plot(self, color="b", xlim=None, ylim=None, figsize=(4, 3)):
         plt.figure(figsize=figsize)
         plot_step(self, color)
         if xlim is not None:

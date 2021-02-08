@@ -176,11 +176,11 @@ class TermsAlgebra(TermsLattice):
     def __matmul__(self, other):
         if isinstance(other, Terms):
             return integrate(binary_op(mul, self.iter_terms(), other.iter_terms()))
-        elif hasattr(other, 'vec'):
+        elif hasattr(other, "vec"):
             return fromiter(map(self.__matmul__, other.vec), "float")
         else:
             raise NotImplementedError
- 
+
     @unary
     def __neg__(x):
         return -x

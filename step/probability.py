@@ -5,6 +5,7 @@ from functools import cached_property
 from math import inf
 from collections.abc import Sequence
 
+
 class Pullback:
     def __init__(self, vec):
         self.vec = vec
@@ -29,7 +30,7 @@ class Pullback:
         raise NotImplementedError
 
     def __repr__(self):
-        return f'{type(self).__name__}(dom=R{len(self.vec)})'
+        return f"{type(self).__name__}(dom=R{len(self.vec)})"
 
 
 def pullback_0(step):
