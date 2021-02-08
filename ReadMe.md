@@ -193,7 +193,9 @@ StepFunction(1[-4.0, -2.0) + 2[-1.0, 1.0) + 3[2.0, 4.0))
 >>> from step import pullback
 >>> K, v = pullback(z)
 >>> K
-Pullback(dom=R4)
+array([StepFunction(True[-inf, -4.0) + True[-2.0, -1.0) + True[1.0, 2.0) + ...),
+       StepFunction(True[-4.0, -2.0)), StepFunction(True[-1.0, 1.0)),
+       StepFunction(True[2.0, 4.0))], dtype=object)
 >>> v
 array([0, 1, 2, 3])
 ```
@@ -217,4 +219,4 @@ True
 
 ### Pushforward
 
-``TODO`
+`TODO`
