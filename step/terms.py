@@ -248,3 +248,9 @@ class TermsAlgebra(TermsLattice):
     @unary
     def nset(x):
         return x < 0
+
+    def __lshift__(self, other):
+        return self.supp() <= other.supp()
+
+    def __rshift__(self, other):
+        return other << self
