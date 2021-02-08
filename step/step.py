@@ -39,6 +39,14 @@ class StepFunction(TermsAlgebra):
             intervals.x,
         )
 
+    @classmethod
+    def one(cls, y_dtype=None):
+        return cls.from_triples(((1, -inf, inf),), y_dtype)
+
+    @classmethod
+    def zero(cls, y_dtype=None):
+        return cls.from_triples(((0, -inf, inf),), y_dtype)
+
     def iter_terms(self):
         yield from zip(self.y, self.x)
 
@@ -55,7 +63,10 @@ class StepFunction(TermsAlgebra):
         return StepFunction(-self.y, self.x)
 
     def __truediv__(self, other):
-        return StepFunction(self.y / other, self.x)
+        if isinstance(other, Terms):
+            raise NotImplementedError
+        else:
+            return StepFunction(self.y / other, self.x)
 
     def __mul__(self, other):
         if isinstance(other, Terms):
@@ -63,10 +74,10 @@ class StepFunction(TermsAlgebra):
         elif other:
             return StepFunction(self.y * other, self.x)
         else:
-            return self.from_triples(((0, -inf, inf),))
+            return StepFunction.zero()
 
     def __rmul__(self, other):
         return self * other
 
 
-leb = StepFunction.from_triples(((True, -inf, inf),))
+leb = StepFunction.one(y_dtype='float')

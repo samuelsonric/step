@@ -29,7 +29,7 @@ class UnionOfIntervals(TermsLattice):
     @classmethod
     def from_endpoints(cls, endpoints):
         x = deque(endpoints)
-        if not (par := (x and -inf == x[0])):
+        if not (par := bool(x and -inf == x[0])):
             x.appendleft(-inf)
         return cls.from_sequence(par, x)
 
@@ -40,6 +40,14 @@ class UnionOfIntervals(TermsLattice):
     @classmethod
     def from_indicator(cls, indicator):
         return cls(indicator.y[0], indicator.x)
+
+    @classmethod
+    def bottom(cls):
+        return cls.from_endpoints(())
+
+    @classmethod
+    def top(cls):
+        return cls.from_endpoints((-inf,))
 
     def iter_terms(self):
         c = cycle((self.par, not self.par))
