@@ -4,13 +4,14 @@ from numpy import unique, array, vectorize
 from functools import cached_property
 from math import inf
 
+
 class PullBack:
     def __init__(self, vec):
         self.vec = vec
 
     @classmethod
     def from_step(cls, step):
-        return cls(pull_back_0(step)[0]) 
+        return cls(pull_back_0(step)[0])
 
     def __matmul__(self, other):
         if other.ndim > 1:
@@ -30,17 +31,18 @@ def pull_back_0(step):
         a,
     )
 
+
 def pull_back(step):
     vec, a = pull_back_0(step)
     return (PullBack(vec), a)
 
 
 def conditional_distr_0(m, x, y):
-    a = vectorize(m.__matmul__, otypes=('float',))(x.reshape(-1, 1) @ y.reshape(1, -1))
+    a = vectorize(m.__matmul__, otypes=("float",))(x.reshape(-1, 1) @ y.reshape(1, -1))
     s = a.sum(axis=1).reshape(-1, 1)
-    s[s==0] = 1
-    return a/s
+    s[s == 0] = 1
+    return a / s
+
 
 def conditional_distr(m, x, y):
     return conditional_distr_0(m, x.vec, y.vec)
-

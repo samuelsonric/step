@@ -105,6 +105,7 @@ def approx_0(fun, start, stop, num_steps):
     yield from map(graph_of_fun(fun), linspace(start, stop, num_steps, endpoint=False))
     yield (0, stop)
 
+
 class Terms:
     repr_pat = "{0}[{1}, {2})"
     repr_sep = " + "
@@ -124,7 +125,7 @@ class Terms:
         if isinstance(other, Terms):
             return integrate(binary_op(mul, self.iter_terms(), other.iter_terms()))
         else:
-            return fromiter(map(self.__matmul__, other.vec), 'float')
+            return fromiter(map(self.__matmul__, other.vec), "float")
 
     def __call__(self, x):
         call(x, self.iter_terms())
@@ -146,9 +147,7 @@ class Terms:
 def binary(op):
     @wraps(op)
     def inner(self, other):
-        return self.from_terms(
-            binary_op(op, self.iter_terms(), other.iter_terms())
-        )
+        return self.from_terms(binary_op(op, self.iter_terms(), other.iter_terms()))
 
     return inner
 
@@ -210,6 +209,7 @@ class TermsAlgebra(TermsLattice):
         @unary
         def topow(x):
             return x ** n
+
         return topow(self)
 
     @unary
@@ -224,6 +224,7 @@ class TermsAlgebra(TermsLattice):
         @unary
         def equalto(x):
             return x == y
+
         return equalto(self)
 
     @unary
