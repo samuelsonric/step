@@ -119,26 +119,10 @@ StepFunction(1.6[-4.0, -3.5) + 1.225[-3.5, -3.0) + 0.9[-3.0, -2.5) + ...)
 |  `x @ y`    | L2 inner product |
 
 ## Probability
-### Measure and Integration
-Every step function *f* determines a signed measure *m* whose integral is given by the formula
 
-∫ *m*(dx) *g*(x) = ∫ dx *f*(x) *g*(x).
+### Integration
 
-Step functions integrate other step functions using the matrix multiplication operator `@`.
-
-```
->>> x @ y
-3.75
-```
-
-Step functions can can also measure intervals.
-
-```
->>> x @ i
-4.0
-```
-
-To perform ordinary integration, import the measure `leb`.
+Integration is performed using the object `leb` and the matrix multiplication operator `@`.
 
 ```
 >>> from step import leb
@@ -146,77 +130,41 @@ To perform ordinary integration, import the measure `leb`.
 8.375
 ```
 
-### Expectation
+#### Expectation
 
-If a step function *f* is nonnegative and integrates to 1, then it is the probability density function (PDF) of a probability measure.
+All step functions *f* can be regarded as random variables. If a step function *g* is nonnegative and integrates to 1, then it can be regarded as the probability density function (PDF) of a probability distribution.
 
-The expected value of a step function with regard to this measure is computed using the matrix multiplication operator `@`.
+Suppose we define
 
 ```
 >>> E = x / (leb @ x)
->>> leb @ E
-1.0
+>>> E
+StepFunction(0.25[-4.0, -2.0) + 0.25[2.0, 4.0))
+```
+
+![](./media/04.png)
+
+Then the step function `E` is positive and integrates to 1. If the step function `y` were distributed according to `E`, then its expectation would be computed using the matrix multiplication operator `@`.
+
+```
 >>> E @ y
 0.9375
 ```
 
-If the step function `y` is normally distributed, then we can approximate its expected value thus:
+If, on the other hand, the step function `y` were normally distributed, than we could estimate its expectation as follows:
 
 ```
 >>> from scipy.stats import norm
 >>> N = StepFunction.approx(norm.pdf, start=-5, stop=5, num_steps=100)
 ```
 
-![](./media/04.png)
+![](./media/05.png)
 
 ```
 >>> N @ y
 0.10599839875582517
 ```
 
-### Pullback
+### Pushforward and Pullback
 
-If *f* is a step function, than any composite function *h* of the form *h* = *g*∘*f* is itself a step function. The set of all such composite functions is a finite dimensional vector space.
-
-Using the function `pullback`, we can obtain a composition operator K that maps R^n into this vector space.
-
-```
->>> from step import StepFunction
->>> z = StepFunction.from_triples(((1, -4, -2), (2, 0, 2), (3, 2, 4)))
->>> z
-StepFunction(1[-4.0, -2.0) + 2[-1.0, 1.0) + 3[2.0, 4.0))
-```
-
-![](./media/05.png)
-
-```
->>> from step import pullback
->>> K, v = pullback(z)
->>> K
-array([StepFunction(True[-inf, -4.0) + True[-2.0, -1.0) + True[1.0, 2.0) + ...),
-       StepFunction(True[-4.0, -2.0)), StepFunction(True[-1.0, 1.0)),
-       StepFunction(True[2.0, 4.0))], dtype=object)
->>> v
-array([0, 1, 2, 3])
-```
-
-Composition is performed using the matrix multiplication operator `@`.
-
-```
->>> w = K @ (0, -3, -2, -3)
->>> w
-StepFunction(-3[-4.0, -2.0) + -2[-1.0, 1.0) + -3[2.0, 4.0))
-```
-
-![](./media/06.png)
-
-The array `v` satisfies the equality `z == K @ v`.
-
-```
->>> z == K @ v
-True
-```
-
-### Pushforward
-
-`TODO`
+...
