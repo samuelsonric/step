@@ -32,7 +32,7 @@ class StepFunction(TermsAlgebra):
         return cls.from_terms(approx(fun, start, stop, num_steps), y_dtype="float")
 
     @classmethod
-    def from_intervals(cls, intervals, y_dtype="bool"):
+    def from_intervals(cls, intervals, y_dtype=None):
         p = intervals.par
         return cls(
             fromiter(islice(cycle((p, not p)), len(intervals.x)), dtype=y_dtype),

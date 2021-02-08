@@ -1,9 +1,9 @@
 from step.terms import reduce_terms
 from step.step import StepFunction
-from numpy import unique, array, vectorize
+from numpy import unique, array, vectorize, ndarray
 from functools import cached_property
 from math import inf
-
+from collections.abc import Sequence
 
 class Pullback:
     def __init__(self, vec):
@@ -14,14 +14,22 @@ class Pullback:
         return cls(pullback_0(step)[0])
 
     def __matmul__(self, other):
-        if other.ndim > 1:
-            return Pullback(self.vec @ other)
-        else:
+        if isinstance(other, ndarray):
+            if other.ndim > 1:
+                return Pullback(self.vec @ other)
+            else:
+                return self.vec @ other
+        elif isinstance(other, Sequence):
             return self.vec @ other
+        else:
+            raise NotImplementedError
 
     # TODO
     def __mul__(self, other):
         raise NotImplementedError
+
+    def __repr__(self):
+        return f'{type(self).__name__}(dom=R{len(self.vec)})'
 
 
 def pullback_0(step):
@@ -33,7 +41,7 @@ def pullback_0(step):
 
 
 def pullback(step):
-    vec, a = pull_back_0(step)
+    vec, a = pullback_0(step)
     return (Pullback(vec), a)
 
 

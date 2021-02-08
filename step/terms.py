@@ -1,5 +1,5 @@
 from math import inf
-from itertools import zip_longest
+from itertools import zip_longest, chain
 from numpy import linspace, array, fromiter, nan_to_num
 from operator import mul, not_, truth
 from functools import wraps
@@ -37,8 +37,10 @@ def terms_of_triple(i):
 
 def terms_of_triples(x):
     i = next(x, (0, -inf, inf))
+    if -inf < i[1]:
+        yield (0, -inf)
     yield from terms_of_triple(i)
-    yield from map(terms_of_triple, x)
+    yield from chain.from_iterable(map(terms_of_triple, x))
 
 
 def integrate_triple(i):
@@ -121,12 +123,6 @@ class Terms:
     def iter_triples(self):
         yield from triples_of_terms(self.iter_terms())
 
-    def __matmul__(self, other):
-        if isinstance(other, Terms):
-            return integrate(binary_op(mul, self.iter_terms(), other.iter_terms()))
-        else:
-            return fromiter(map(self.__matmul__, other.vec), "float")
-
     def __call__(self, x):
         call(x, self.iter_terms())
 
@@ -177,6 +173,14 @@ class TermsLattice(Terms):
 
 
 class TermsAlgebra(TermsLattice):
+    def __matmul__(self, other):
+        if isinstance(other, Terms):
+            return integrate(binary_op(mul, self.iter_terms(), other.iter_terms()))
+        elif hasattr(other, 'vec'):
+            return fromiter(map(self.__matmul__, other.vec), "float")
+        else:
+            raise NotImplementedError
+ 
     @unary
     def __neg__(x):
         return -x
