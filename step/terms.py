@@ -1,58 +1,13 @@
 from math import inf
 from itertools import zip_longest, chain
-from numpy import linspace, array, fromiter, nan_to_num, ndarray
-from operator import mul, not_, truth
+from numpy import linspace
+from operator import add
 from functools import wraps
-from collections.abc import Sequence
 
 
-def equal(x, y):
-    return all(i == j for i, j in zip_longest(x, y))
+# coor: (y, x, cl)
 
-
-def call(val, x):
-    def filt(i):
-        return i[1] <= val < i[2]
-
-    return next(filter(filt, triples_of_terms(x)))
-
-
-def triples_of_terms(x):
-    filt = lambda x: x[0]
-    yield from filter(filt, triples_of_terms_0(x))
-
-
-def triples_of_terms_0(x):
-    i = next(x)
-    for j in x:
-        yield (*i, j[1])
-        i = j
-    yield (*i, inf)
-
-
-def terms_of_triple(i):
-    yield (i[0], i[1])
-    if i[2] < inf:
-        yield (0, i[2])
-
-
-def terms_of_triples(x):
-    i = next(x, (0, -inf, inf))
-    if -inf < i[1]:
-        yield (0, -inf)
-    yield from terms_of_triple(i)
-    yield from chain.from_iterable(map(terms_of_triple, x))
-
-
-def integrate_triple(i):
-    return i[0] and i[0] * (i[2] - i[1])
-
-
-def integrate(x):
-    return sum(map(integrate_triple, triples_of_terms(x)))
-
-
-def reduce_terms(x):
+def compress(x):
     p = None
     for i in x:
         if not p == i[0]:
@@ -61,90 +16,51 @@ def reduce_terms(x):
 
 
 def binary_op(op, x, y):
-    yield from reduce_terms(binary_op_0(op, x, y))
-
-
-def unary_op(op, x):
-    yield from reduce_terms(unary_op_0(op, x))
-
-
-def approx(fun, start, stop, num_steps):
-    yield from reduce_terms(approx_0(fun, start, stop, num_steps))
-
-
-def binary_op_0(op, x, y):
     i = next(x)
     j = next(y)
-    sentinel = (0, inf)
+    sentinel = (0, inf, False)
 
     while not i == j == sentinel:
-        if i[1] < j[1]:
-            yield (op(i[0], jh[0]), i[1])
+        if i[1] < j[1] or (i[1] == j[1] and i[2] > j[2]):
+            yield (op(i[0], jh[0]), *i[1:])
             ih = i
             i = next(x, sentinel)
-        elif j[1] < i[1]:
-            yield (op(ih[0], j[0]), j[1])
+        elif j[1] < i[1] or (j[1] == i[1] and j[2] > i[2]):
+            yield (op(ih[0], j[0]), *j[1:])
             jh = j
             j = next(y, sentinel)
         else:
-            yield (op(i[0], j[0]), i[1])
+            yield (op(i[0], j[0]), *i[1:])
             ih = i
             jh = j
             i = next(x, sentinel)
             j = next(y, sentinel)
 
 
-def unary_op_0(op, x):
+def unary_op(op, x):
     for i in x:
-        yield (op(i[0]), i[1])
+        yield (op(i[0]), *i[1:])
 
 
-def graph_of_fun(fun):
-    return lambda x: (fun(x), x)
-
-
-def approx_0(fun, start, stop, num_steps):
-    yield (0, -inf)
-    yield from map(graph_of_fun(fun), linspace(start, stop, num_steps, endpoint=False))
-    yield (0, stop)
-
-
-class Terms:
-    repr_pat = "{0}[{1}, {2})"
-    repr_sep = " + "
-    repr_num = 3
+class Lep:
+    @classmethod
+    def from_compressed_lep(cls, lep):
+        raise NotImplementedError
 
     @classmethod
-    def from_terms(cls, terms):
+    def from_lep(cls, lep):
+        return cls.from_compressed_lep(compress(iter(lep)))
+
+    def iter_lep(self):
         raise NotImplementedError
-
-    def iter_terms(self):
-        raise NotImplementedError
-
-    def iter_triples(self):
-        yield from triples_of_terms(self.iter_terms())
-
-    def __call__(self, x):
-        call(x, self.iter_terms())
 
     def __eq__(self, other):
-        return equal(self.iter_terms(), other.iter_terms())
-
-    def __repr__(self):
-        l = []
-        for n, i in enumerate(self.iter_triples()):
-            if n < self.repr_num:
-                l.append(self.repr_pat.format(*i))
-            else:
-                l.append("...")
-                break
-        return f"{type(self).__name__}({self.repr_sep.join(l)})"
-
+        return all(i == j for i, j in zip_longest(x.iter_lep(), y.iter_lep()))
 
 def binary(op):
     @wraps(op)
     def inner(self, other):
-        return self.from_terms(binary_op(op, self.iter_terms(), other.iter_terms()))
+        return self.from_lep(binary_op(op, self.iter_lep(), other.iter_lep()))
 
     return inner
 
@@ -152,7 +68,7 @@ def binary(op):
 def unary(op):
     @wraps(op)
     def inner(self):
-        return self.from_terms(unary_op(op, self.iter_terms()))
+        return self.from_lep(unary_op(op, self.iter_lep()))
 
     return inner
 
@@ -160,12 +76,12 @@ def unary(op):
 def scalar(op):
     @wraps(op)
     def inner(self, a):
-        return self.from_terms(unary_op(lambda x: op(x, a), self.iter_terms()))
+        return self.from_lep(unary_op(lambda x: op(x, a), self.iter_lep()))
 
     return inner
 
 
-class TermsLattice(Terms):
+class Lattice(Lep):
     @binary
     def __and__(self, other):
         return min(self, other)
@@ -181,12 +97,33 @@ class TermsLattice(Terms):
         return self <= other and not self == other
 
 
-class TermsAlgebra(TermsLattice):
+def rect(x):
+    i = next(x)
+    for j in x:
+        yield i[0] and i[0] * (j[1] - i[1])
+        i = j
+    yield i[0] and i[0] * inf
+    
+
+def graph_of_fun(fun):
+    return lambda x: (fun(x), x, True)
+
+
+def approx(fun, start, stop, num_steps):
+    yield (0, -inf, False)
+    yield from map(graph_of_fun(fun), linspace(start, stop, num_steps, endpoint=False))
+    yield (0, stop, True)
+
+
+class Algebra(Lattice):
+    @classmethod
+    def approx(cls, fun, start, stop, num_steps=100):
+        return cls.from_terms(approx(fun, start, stop, num_steps))
+
     def __matmul__(self, other):
-        if isinstance(other, Terms):
-            return integrate(binary_op(mul, self.iter_terms(), other.iter_terms()))
-        elif isinstance(other, (ndarray, Sequence)):
-            return fromiter(map(self.__matmul__, other), "float")
+        if isinstance(other, Lep):
+            p = self * other
+            return sum(rect(p.iter_lep()))
         else:
             return NotImplemented
 
